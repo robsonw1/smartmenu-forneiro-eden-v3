@@ -438,8 +438,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   syncSettingsToSupabase: async () => {
     try {
       const { settings } = get();
-
-      const updateData: any = {
+      
+      const updateData = {
         value: {
           name: settings.name,
           phone: settings.phone,
@@ -451,6 +451,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           deliveryTimeMax: settings.deliveryTimeMax,
           pickupTimeMin: settings.pickupTimeMin,
           pickupTimeMax: settings.pickupTimeMax,
+          adminPassword: settings.adminPassword,
           orderAlertEnabled: settings.orderAlertEnabled,
           sendOrderSummaryToWhatsApp: settings.sendOrderSummaryToWhatsApp,
         },
@@ -470,11 +471,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         .eq('id', 'store-settings');
 
       if (error) {
-        console.error('❌ Erro ao sincronizar settings com Supabase:', error);
+        console.error('❌ Erro ao sincronizar settings:', error);
         return { success: false, message: 'Erro ao sincronizar configurações' };
       }
 
-      console.log('✅ Settings sincronizados com Supabase com TODOS os dados');
+      console.log('✅ Settings sincronizados com sucesso');
       return { success: true, message: 'Configurações sincronizadas com sucesso!' };
     } catch (error) {
       console.error('❌ Erro ao sincronizar settings:', error);
