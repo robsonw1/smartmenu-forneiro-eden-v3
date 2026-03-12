@@ -295,8 +295,20 @@ export const useOrdersStore = create<OrdersStore>()(
               drink: item.drink ? (typeof item.drink === 'string' ? item.drink : item.drink.name) : null,
               border: item.border ? (typeof item.border === 'string' ? item.border : item.border.name) : null,
               
-              // Combos
-              comboPizzas: Array.isArray(item.comboPizzasData) ? item.comboPizzasData : [],
+              // Combos - Mapear corretamente pizzaName e secondHalfName para halfOne/halfTwo
+              comboPizzas: Array.isArray(item.comboPizzasData) 
+                ? item.comboPizzasData.map((pizza: any) => ({
+                    pizzaId: pizza.pizzaId || `pizza-${pizza.pizzaNumber}`,
+                    pizzaName: pizza.pizzaName || pizza.name,
+                    pizzaNumber: pizza.pizzaNumber,
+                    isHalfHalf: pizza.isHalfHalf || false,
+                    // ✨ SEMPRE incluir halfOne/halfTwo para consistência
+                    // Para meia-meia: pizzaName -> halfOne, secondHalfName -> halfTwo
+                    // Para inteira: pizzaName -> halfOne, null -> halfTwo
+                    halfOne: pizza.pizzaName || pizza.name || undefined,
+                    halfTwo: pizza.isHalfHalf ? (pizza.secondHalfName || null) : null,
+                  }))
+                : [],
               
               // Observa├º├Áes
               notes: newOrder.observations || null,
@@ -326,6 +338,10 @@ export const useOrdersStore = create<OrdersStore>()(
 
           if (orderItems.length > 0) {
             console.log(`­ƒÆ¥ [SAVEORDER] Tentando inserir ${orderItems.length} items na tabela order_items...`);
+            console.log('📋 [DEBUG] Detalhes dos comboPizzas sendo salvos:', orderItems.map(item => ({
+              product: item.product_name,
+              comboPizzas: (item.item_data as any).comboPizzas
+            })));
             
             const { error: itemsError, data: itemsData } = await supabase
               .from('order_items')
@@ -788,7 +804,7 @@ export const useOrdersStore = create<OrdersStore>()(
                         ? itemData.comboPizzas 
                         : [],
                       
-                      // Observa├º├Áes
+                      // Observações
                       notes: itemData.notes || undefined,
                       
                       // ✨ JSONB COMPLETO: Todos os detalhes do item para renderiza├º├úo

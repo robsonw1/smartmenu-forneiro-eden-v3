@@ -1,12 +1,6 @@
 /**
- * 🎯 COMPONENTE UNIVERSAL: Renderiza detalhes de itens de pedido
- * Usado em: Dashboard, Impressão, Modal de Pedidos
- * 
- * Estrutura de dados esperada:
- * - item.product_name: Nome do produto
- * - item.size: Tamanho
- * - item.quantity: Quantidade
- * - item.item_data: JSONB com detalhes completos
+ * 🎯 RENDERIZADOR DE ITENS: Exibe detalhes de pedidos no Dashboard
+ * Visual limpo e organizado como no carrinho do cliente
  */
 
 interface ItemData {
@@ -39,10 +33,14 @@ interface OrderItemProps {
   format?: 'dashboard' | 'print' | 'compact';
 }
 
-/**
- * Formata um valor para preço em BRL
- */
-export const formatPrice = (price: number | undefined) => {
+const extractName = (value: any): string => {
+  if (!value) return '-';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object' && value.name) return String(value.name);
+  return String(value);
+};
+
+const formatPrice = (price: number | undefined) => {
   if (!price) return 'R$ 0,00';
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -51,216 +49,213 @@ export const formatPrice = (price: number | undefined) => {
 };
 
 /**
- * Extrai o nome seguro de um ingrediente (string ou objeto)
- */
-export const extractName = (value: any): string => {
-  if (!value) return '-';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'object' && value.name) return String(value.name);
-  return String(value);
-};
-
-/**
- * Formata o tipo de pizza (inteira/meia-meia)
- */
-export const formatPizzaType = (type?: string): string => {
-  switch (type) {
-    case 'meia-meia':
-    case 'half-half':
-      return 'Meia-Meia';
-    case 'inteira':
-      return 'Inteira';
-    default:
-      return 'Pizza';
-  }
-};
-
-/**
- * Renderiza para DASHBOARD - Visual completo e formatado
+ * 📱 DASHBOARD - Layout limpo e organizador como carrinho
  */
 export const renderDashboardItem = (props: OrderItemProps): React.ReactNode => {
-  const { productName, quantity, size, totalPrice, itemData, format } = props;
+  const { productName, quantity, size, totalPrice, itemData } = props;
 
   return (
-    <div className="flex justify-between items-start p-3 bg-secondary/50 rounded-lg text-sm space-y-1">
-      <div className="flex-1">
-        {/* Cabeçalho: Quantidade x Produto (Tamanho) */}
-        <p className="font-semibold text-base">
-          {quantity}x {productName}
-          {size && ` (${size === 'broto' ? 'Broto' : size === 'grande' ? 'Grande' : size})`}
-        </p>
-
-        {itemData && (
-          <div className="mt-2 space-y-1">
-            {/* Tipo de Pizza */}
-            {itemData.pizzaType && (
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Tipo:</span> {formatPizzaType(itemData.pizzaType)}
-              </p>
-            )}
-
-            {/* Sabores - Pizza Simples */}
-            {itemData.sabor1 && !itemData.comboPizzas?.length && (
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Sabor 1:</span> {extractName(itemData.sabor1)}
-              </p>
-            )}
-
-            {itemData.sabor2 && (
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Sabor 2:</span> {extractName(itemData.sabor2)}
-              </p>
-            )}
-
-            {/* Meia-Meia - Partes */}
-            {itemData.halfOne && (
-              <div className="text-xs text-muted-foreground space-y-0.5">
-                <p>
-                  <span className="font-medium">Metade 1:</span> {extractName(itemData.halfOne)}
-                </p>
-                {itemData.halfTwo && (
-                  <p>
-                    <span className="font-medium">Metade 2:</span> {extractName(itemData.halfTwo)}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Combo Pizzas */}
-            {itemData.comboPizzas && itemData.comboPizzas.length > 0 && (
-              <div className="mt-2 ml-2 border-l-2 border-primary/30 pl-2">
-                <p className="font-semibold text-xs">Pizzas do Combo:</p>
-                {itemData.comboPizzas.map((pizza, idx) => (
-                  <div key={idx} className="text-xs text-muted-foreground mt-1">
-                    <p className="font-medium">Pizza #{pizza.pizzaId?.includes('promo') ? '−' : idx + 1}</p>
-                    <p className="ml-2">
-                      {pizza.pizzaName}
-                      {pizza.isHalfHalf && ' (Meia-Meia)'}
-                    </p>
-                    {pizza.isHalfHalf && (
-                      <div className="ml-2 text-xs">
-                        <p>
-                          └─ {extractName(pizza.halfOne)} | {extractName(pizza.halfTwo)}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Borda */}
-            {itemData.border && (
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Borda:</span> {extractName(itemData.border)}
-              </p>
-            )}
-
-            {/* Bebida */}
-            {itemData.drink && (
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Bebida:</span> {extractName(itemData.drink)}
-              </p>
-            )}
-
-            {/* Extras */}
-            {itemData.extras && itemData.extras.length > 0 && (
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Adicionais:</span> {itemData.extras.map(e => extractName(e)).join(', ')}
-              </p>
-            )}
-
-            {/* Custom Ingredients */}
-            {itemData.customIngredients && itemData.customIngredients.length > 0 && (
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Customizações:</span>{' '}
-                {itemData.customIngredients.map(i => extractName(i)).join(', ')}
-              </p>
-            )}
-
-            {/* Observações */}
-            {itemData.notes && (
-              <p className="text-xs text-muted-foreground italic">
-                <span className="font-medium">Obs:</span> {itemData.notes}
-              </p>
-            )}
-          </div>
+    <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg border border-slate-200 space-y-3">
+      {/* Cabeçalho */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h5 className="font-bold text-base leading-tight">
+            {quantity}x {productName}
+          </h5>
+          {size && (
+            <p className="text-sm text-slate-600 mt-1">
+              {size === 'broto' ? 'Broto' : size === 'grande' ? 'Grande' : size}
+            </p>
+          )}
+        </div>
+        {totalPrice && (
+          <span className="font-bold text-base text-orange-600">{formatPrice(totalPrice)}</span>
         )}
       </div>
 
-      {/* Preço */}
-      {totalPrice && <span className="font-semibold">{formatPrice(totalPrice)}</span>}
+      {/* Detalhes do Item */}
+      {itemData && (
+        <div className="space-y-3 border-t border-slate-300 pt-3">
+          {/* COMBO PIZZAS - Cada pizza com seu tipo claramente indicado */}
+          {itemData.comboPizzas && itemData.comboPizzas.length > 0 && (
+            <div className="space-y-4">
+              {itemData.comboPizzas.map((pizza, idx) => {
+                // Determinar tipo desta pizza específica
+                const pizzaType = pizza.isHalfHalf ? 'Meia-Meia' : 'Inteira';
+                
+                // Fallback: se halfOne/halfTwo não existem, usar pizzaName/secondHalfName
+                const sabor1 = pizza.halfOne || pizza.pizzaName || '-';
+                const sabor2 = pizza.halfTwo || pizza.secondHalfName || null;
+                
+                return (
+                  <div key={idx} className="pb-3 border-b border-slate-300 last:border-0 last:pb-0">
+                    {/* Título da pizza */}
+                    <p className="font-bold text-slate-900 mb-2">
+                      Pizza {idx + 1} - Tipo: {pizzaType}
+                    </p>
+                    
+                    {/* Conteúdo da pizza */}
+                    {pizza.isHalfHalf ? (
+                      <>
+                        <p className="text-sm text-slate-700 ml-2">
+                          • Sabor 1: {extractName(sabor1)}
+                        </p>
+                        <p className="text-sm text-slate-700 ml-2">
+                          • Sabor 2: {extractName(sabor2)}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-slate-700 ml-2">
+                        • Sabor: {extractName(sabor1)}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* PIZZA SIMPLES (não combo) */}
+          {itemData.sabor1 && !itemData.comboPizzas?.length && (
+            <div className="space-y-1">
+              {/* Detectar corretamente se é meia-meia ou inteira */}
+              {itemData.sabor2 ? (
+                <>
+                  <p className="font-bold text-slate-900 mb-2">Tipo: Meia-Meia</p>
+                  <p className="text-sm text-slate-700 ml-2">
+                    • Sabor 1: {extractName(itemData.sabor1)}
+                  </p>
+                  <p className="text-sm text-slate-700 ml-2">
+                    • Sabor 2: {extractName(itemData.sabor2)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold text-slate-900 mb-2">Tipo: Inteira</p>
+                  <p className="text-sm text-slate-700 ml-2">
+                    • Sabor: {extractName(itemData.sabor1)}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* MEIA-MEIA (halfOne/halfTwo) - fallback raro */}
+          {(itemData.halfOne || itemData.halfTwo) && !itemData.comboPizzas?.length && !itemData.sabor1 && (
+            <div className="space-y-1">
+              <p className="font-bold text-slate-900 mb-2">Tipo: Meia-Meia</p>
+              <p className="text-sm text-slate-700 ml-2">
+                • {extractName(itemData.halfOne)}
+              </p>
+              <p className="text-sm text-slate-700 ml-2">
+                • {extractName(itemData.halfTwo)}
+              </p>
+            </div>
+          )}
+
+          {/* BORDA */}
+          {itemData.border && (
+            <div className="space-y-1">
+              <p className="font-semibold text-slate-900 text-sm">Borda:</p>
+              <p className="text-sm text-slate-700 ml-2">{extractName(itemData.border)}</p>
+            </div>
+          )}
+
+          {/* BEBIDA */}
+          {itemData.drink && (
+            <div className="space-y-1">
+              <p className="font-semibold text-slate-900 text-sm">Bebida:</p>
+              <p className="text-sm text-slate-700 ml-2">{extractName(itemData.drink)}</p>
+            </div>
+          )}
+
+          {/* EXTRAS/ADICIONAIS */}
+          {itemData.extras && itemData.extras.length > 0 && (
+            <div className="space-y-1">
+              <p className="font-semibold text-slate-900 text-sm">Adicionais:</p>
+              <div className="ml-2">
+                {itemData.extras.map((extra, idx) => (
+                  <p key={idx} className="text-sm text-slate-700">
+                    • {extractName(extra)}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* OBSERVAÇÕES */}
+          {itemData.notes && (
+            <div className="space-y-1 bg-amber-50 p-2 rounded border border-amber-200">
+              <p className="font-semibold text-amber-900 text-sm">Observação:</p>
+              <p className="text-sm text-amber-800">{itemData.notes}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
 /**
- * Renderiza para IMPRESSÃO - Formato compacto e otimizado para térmica
+ * 🖨️ IMPRESSÃO - Formato compacto para térmica
  */
 export const renderPrintItem = (props: OrderItemProps): string => {
   const { productName, quantity, size, itemData } = props;
 
   let html = `
-    <div style="margin-bottom: 12px; font-size: 14px; border-bottom: 1px dotted #333; padding-bottom: 8px;">
-      <div style="font-weight: bold; margin-bottom: 4px;">
+    <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333;">
+      <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px;">
         ${quantity}x ${productName}${size ? ` (${size})` : ''}
       </div>
   `;
 
   if (itemData) {
-    // Pizza Type
-    if (itemData.pizzaType) {
-      html += `<div style="margin-left: 8px; font-size: 12px;">Tipo: ${formatPizzaType(itemData.pizzaType)}</div>`;
-    }
-
-    // Sabores Simples
-    if (itemData.sabor1 && !itemData.comboPizzas?.length) {
-      html += `<div style="margin-left: 8px; font-size: 12px;">Sabor: ${extractName(itemData.sabor1)}</div>`;
-      if (itemData.sabor2) {
-        html += `<div style="margin-left: 8px; font-size: 12px;">Sabor 2: ${extractName(itemData.sabor2)}</div>`;
-      }
-    }
-
-    // Meia-Meia
-    if (itemData.halfOne || itemData.halfTwo) {
-      html += `<div style="margin-left: 8px; font-size: 12px;">
-        Meia: ${extractName(itemData.halfOne)} | ${extractName(itemData.halfTwo)}
-      </div>`;
-    }
-
     // Combo Pizzas
     if (itemData.comboPizzas && itemData.comboPizzas.length > 0) {
-      html += `<div style="margin-left: 8px; font-size: 12px; margin-top: 4px;">Pizzas:</div>`;
+      html += `<div style="margin-left: 10px; font-size: 11px; margin-bottom: 6px;">
+        <strong>Pizzas:</strong>`;
       itemData.comboPizzas.forEach((pizza, idx) => {
-        html += `<div style="margin-left: 16px; font-size: 11px;">
-          • ${pizza.pizzaName}${pizza.isHalfHalf ? ` (${extractName(pizza.halfOne)} | ${extractName(pizza.halfTwo)})` : ''}
-        </div>`;
+        html += `<div style="margin-left: 8px;">Pizza ${idx + 1}: ${extractName(pizza.pizzaName)}`;
+        if (pizza.isHalfHalf) {
+          html += `<br style="margin-left: 16px;">• ${extractName(pizza.halfOne)} / ${extractName(pizza.halfTwo)}`;
+        }
+        html += `</div>`;
       });
+      html += `</div>`;
     }
 
-    // Border
+    // Pizza simples
+    if (itemData.sabor1 && !itemData.comboPizzas?.length) {
+      html += `<div style="margin-left: 10px; font-size: 11px; margin-bottom: 6px;">
+        Pizza: ${extractName(itemData.sabor1)}`;
+      if (itemData.sabor2) {
+        html += `<br>Metade 2: ${extractName(itemData.sabor2)}`;
+      }
+      html += `</div>`;
+    }
+
+    // Borda
     if (itemData.border) {
-      html += `<div style="margin-left: 8px; font-size: 12px;">Borda: ${extractName(itemData.border)}</div>`;
+      html += `<div style="margin-left: 10px; font-size: 11px; margin-bottom: 6px;">Borda: ${extractName(itemData.border)}</div>`;
     }
 
-    // Drink
+    // Bebida
     if (itemData.drink) {
-      html += `<div style="margin-left: 8px; font-size: 12px;">Bebida: ${extractName(itemData.drink)}</div>`;
+      html += `<div style="margin-left: 10px; font-size: 11px; margin-bottom: 6px;">Bebida: ${extractName(itemData.drink)}</div>`;
     }
 
     // Extras
     if (itemData.extras && itemData.extras.length > 0) {
-      html += `<div style="margin-left: 8px; font-size: 12px;">+ ${itemData.extras.map(e => extractName(e)).join(', ')}</div>`;
+      html += `<div style="margin-left: 10px; font-size: 11px; margin-bottom: 6px;">
+        + ${itemData.extras.map(e => extractName(e)).join(', ')}
+      </div>`;
     }
 
-    // Custom Ingredients
-    if (itemData.customIngredients && itemData.customIngredients.length > 0) {
-      html += `<div style="margin-left: 8px; font-size: 12px;">Custom: ${itemData.customIngredients.map(i => extractName(i)).join(', ')}</div>`;
-    }
-
-    // Notes
+    // Notas
     if (itemData.notes) {
-      html += `<div style="margin-left: 8px; font-size: 11px; font-style: italic; color: #666;">Obs: ${itemData.notes}</div>`;
+      html += `<div style="margin-left: 10px; font-size: 10px; font-style: italic; color: #666; margin-top: 6px;">
+        Obs: ${itemData.notes}
+      </div>`;
     }
   }
 
@@ -269,59 +264,28 @@ export const renderPrintItem = (props: OrderItemProps): string => {
 };
 
 /**
- * Renderiza formato COMPACTO - Uma linha por item
+ * ⚡ COMPACTO - Uma linha
  */
 export const renderCompactItem = (props: OrderItemProps): string => {
   const { productName, quantity, size, itemData } = props;
-
-  let compact = `${quantity}x ${productName}`;
-
-  if (size) {
-    compact += ` (${size})`;
-  }
-
-  if (itemData) {
-    const details: string[] = [];
-
-    if (itemData.halfOne) {
-      details.push(`${extractName(itemData.halfOne)}|${extractName(itemData.halfTwo)}`);
-    } else if (itemData.sabor1) {
-      details.push(extractName(itemData.sabor1));
-    }
-
-    if (itemData.drink) {
-      details.push(`Bebida: ${extractName(itemData.drink)}`);
-    }
-
-    if (itemData.border) {
-      details.push(`Borda: ${extractName(itemData.border)}`);
-    }
-
-    if (itemData.extras?.length) {
-      details.push(`+${itemData.extras.map(e => extractName(e)).join(', ')}`);
-    }
-
-    if (details.length > 0) {
-      compact += ` [${details.join(' • ')}]`;
-    }
-  }
-
-  return compact;
+  let text = `${quantity}x ${productName}`;
+  if (size) text += ` (${size})`;
+  if (itemData?.drink) text += ` | Bebida: ${extractName(itemData.drink)}`;
+  if (itemData?.border) text += ` | Borda: ${extractName(itemData.border)}`;
+  if (itemData?.extras?.length) text += ` | +${itemData.extras.map(e => extractName(e)).join(', ')}`;
+  return text;
 };
 
 /**
- * Componente React para Dashboard
+ * ⚛️ COMPONENTE REACT
  */
 export function OrderItemDetails(props: OrderItemProps) {
   return <>{renderDashboardItem(props)}</>;
 }
 
-/**
- * Componente para usar em lista de itens
- */
 export function OrderItemsList({ items }: { items: OrderItemProps[] }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {items.map((item, index) => (
         <OrderItemDetails key={index} {...item} />
       ))}

@@ -431,8 +431,8 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
 
           {/* Items */}
           <div>
-            <h4 className="font-semibold mb-3">Itens do Pedido</h4>
-            <div className="space-y-3">
+            <h4 className="font-semibold mb-4 text-base">Itens do Pedido</h4>
+            <div className="space-y-4">
               {(localOrder.items ?? []).map((item, index) => {
                 if (!item || !item.product) return null;
                 
