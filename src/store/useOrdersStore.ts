@@ -790,6 +790,9 @@ export const useOrdersStore = create<OrdersStore>()(
                       
                       // Observa├º├Áes
                       notes: itemData.notes || undefined,
+                      
+                      // ✨ JSONB COMPLETO: Todos os detalhes do item para renderiza├º├úo
+                      itemData: itemData,
                     };
                     
                     console.log(`Ô£à [SYNC-ITEM] "${item.product_name}" reconstru├¡do com sucesso:`, {
