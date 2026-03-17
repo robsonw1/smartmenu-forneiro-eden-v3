@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/ProductCard';
 import { Gift, Tag, Pizza, Crown, Star, Cake, GlassWater, Truck, Store, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -42,6 +42,14 @@ export function ProductCatalog() {
       setActiveTab(categories[index].id);
     },
   });
+
+  // Sincronizar carrossel quando activeTab muda (desktop)
+  useEffect(() => {
+    const categoryIndex = categories.findIndex((c) => c.id === activeTab);
+    if (categoryIndex >= 0 && categoryIndex !== carousel.currentIndex) {
+      carousel.goToCategory(categoryIndex);
+    }
+  }, [activeTab]);
 
   return (
     <section id="cardapio" className="py-12 md:py-20">
