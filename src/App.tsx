@@ -11,6 +11,7 @@ import { useScheduleSync } from "@/hooks/use-schedule-sync";
 import { useSettingsUpdateListener } from "@/hooks/use-settings-update-listener";
 import { useLoyaltySettingsStore } from "@/store/useLoyaltySettingsStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import Index from "./pages/Index.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
@@ -48,6 +49,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PWAInstallBanner />
       <BrowserRouter>
         <AppContent />
       </BrowserRouter>

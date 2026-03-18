@@ -214,6 +214,12 @@ export function ProductModal() {
       return;
     }
 
+    // Validate drink selection (mandatory for pizzas and combos)
+    if (showDrinkSelection && !selectedDrinkId) {
+      toast.error('Escolha sua bebida ou selecione não quero bebida');
+      return;
+    }
+
     // Validate combo pizza selections
     if (isCombo) {
       if (isComboFamilia && (!comboPizza1Id || !comboPizza2Id)) {
