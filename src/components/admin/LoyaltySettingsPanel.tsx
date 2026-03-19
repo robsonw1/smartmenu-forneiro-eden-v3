@@ -45,6 +45,12 @@ export function LoyaltySettingsPanel() {
 
       if (success) {
         toast.success('Configurações de fidelização salvas com sucesso!');
+        
+        // ✅ NOVO: Recarregar settings IMEDIATAMENTE após salvar
+        await loadSettings();
+        
+        // ✅ NOVO: Notificar todos os componentes sobre a mudança
+        window.dispatchEvent(new CustomEvent('loyaltySettingsUpdated', { detail: form }));
       } else {
         toast.error('Erro ao salvar configurações');
       }
