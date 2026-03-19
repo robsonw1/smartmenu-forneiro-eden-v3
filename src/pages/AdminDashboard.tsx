@@ -238,33 +238,24 @@ const AdminDashboard = () => {
     }
   }, [navigate]);
 
-  // Sincronizar "pedidos do Supabase quando o painel carrega
+  // Sincronizar pedidos do Supabase quando o painel carrega
   useEffect(() => {
     const token = localStorage.getItem('admin-token');
     if (!token) return;
 
-    // Sincronizar imediatamente
+    // ✅ CENTRALIZADO: Sincronização realtime agora é feita GLOBALMENTE em use-realtime-sync.ts
+    // AdminDashboard apenas chama uma sincronização inicial ao montar
+    console.log('📡 [ADMIN] Iniciando sincronização de pedidos ao carregar...');
     syncOrdersFromSupabase();
 
-    // Configurar intervalo para sincronizar a cada 3 segundos
+    // ⏰ ADICIONAL: Polling local a cada 5 segundos como backup
+    // Se realtime falhar, este polling garante que dados sempre atualizados
     const syncInterval = setInterval(() => {
       syncOrdersFromSupabase();
-    }, 3000);
-
-    // Configurar real-time subscription para novos pedidos
-    const subscription = supabase
-      .channel('public:orders')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-        console.log('🔄 Mudança em orders detectada:', payload.eventType);
-        syncOrdersFromSupabase();
-      })
-      .subscribe((status) => {
-        console.log('📡 Subscription status:', status);
-      });
+    }, 5000);
 
     return () => {
       clearInterval(syncInterval);
-      subscription.unsubscribe();
     };
   }, [syncOrdersFromSupabase]);
 
