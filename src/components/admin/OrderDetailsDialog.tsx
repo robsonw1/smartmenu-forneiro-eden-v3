@@ -174,6 +174,25 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
             toast.info(message || 'Pedido foi cancelado.', {
               duration: 5000
             });
+            
+            // ✅ NOVO: Sincronizar pontos do cliente IMEDIATAMENTE após cancelamento
+            if (localOrder.customer?.email) {
+              const findOrCreateCustomer = useLoyaltyStore.getState().findOrCreateCustomer;
+              const refreshCurrentCustomer = useLoyaltyStore.getState().refreshCurrentCustomer;
+              
+              findOrCreateCustomer(localOrder.customer.email).then((customer) => {
+                if (customer?.id) {
+                  refreshCurrentCustomer(customer.id).then(() => {
+                    console.log('[ORDER-CANCEL] ✅ Pontos do cliente sincronizados após cancelamento');
+                    // ✅ Disparar evento para atualizar UI customer
+                    window.dispatchEvent(new CustomEvent('customerPointsUpdated', { detail: { customerId: customer.id } }));
+                  }).catch((error) => {
+                    console.error('[ORDER-CANCEL] ⚠️ Erro ao sincronizar pontos:', error);
+                  });
+                }
+              });
+            }
+            
             // Fechar o diálogo após 2 segundos
             setTimeout(() => onOpenChange(false), 2000);
           }
