@@ -498,6 +498,12 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
                 {localOrder.paymentMethod === 'pix' ? 'PIX' : localOrder.paymentMethod === 'card' ? 'Cartao' : 'Dinheiro'}
               </Badge>
             </div>
+            {localOrder.address?.change_amount && (
+              <div>
+                <span className="text-muted-foreground">Troco para:</span>
+                <Badge variant="secondary">R$ {Number(localOrder.address.change_amount).toFixed(2)}</Badge>
+              </div>
+            )}
             <div>
               <span className="text-muted-foreground">Data:</span>
               {format(new Date(localOrder.createdAt), "dd/MM/yyyy 'as' HH:mm", { locale: ptBR })}
