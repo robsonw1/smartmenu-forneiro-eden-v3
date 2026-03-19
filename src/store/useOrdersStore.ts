@@ -114,6 +114,7 @@ export const useOrdersStore = create<OrdersStore>()(
           // Adicionar change_amount se cliente escolheu troco em dinheiro
           if (newOrder.paymentMethod === 'cash' && newOrder.needsChange && newOrder.changeAmount) {
             addressWithMetadata.change_amount = newOrder.changeAmount;
+            console.log('💰 [TROCO] Salvando troco:', { changeAmount: newOrder.changeAmount, addressWithMetadata });
           }
           
           // ­ƒöæ CR├ìTICO: Calcular pending_points baseado em se cliente usou pontos
