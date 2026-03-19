@@ -1126,19 +1126,19 @@ const AdminDashboard = () => {
                   </TabsTrigger>
 
                   <TabsTrigger
-                    value="products"
-                    className="w-full justify-start gap-3 px-4 py-3 rounded-lg hover:bg-accent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
-                  >
-                    <Pizza className="w-4 h-4" />
-                    <span className="text-sm font-medium">Cardápio</span>
-                  </TabsTrigger>
-
-                  <TabsTrigger
                     value="orders"
                     className="w-full justify-start gap-3 px-4 py-3 rounded-lg hover:bg-accent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
                   >
                     <ShoppingBag className="w-4 h-4" />
                     <span className="text-sm font-medium">Pedidos</span>
+                  </TabsTrigger>
+
+                  <TabsTrigger
+                    value="products"
+                    className="w-full justify-start gap-3 px-4 py-3 rounded-lg hover:bg-accent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                  >
+                    <Pizza className="w-4 h-4" />
+                    <span className="text-sm font-medium">Cardápio</span>
                   </TabsTrigger>
 
                   <TabsTrigger
@@ -1150,14 +1150,6 @@ const AdminDashboard = () => {
                   </TabsTrigger>
 
                   <Separator className="my-1" />
-
-                  <TabsTrigger
-                    value="settings"
-                    className="w-full justify-start gap-3 px-4 py-3 rounded-lg hover:bg-accent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span className="text-sm font-medium">Configurações</span>
-                  </TabsTrigger>
 
                   <TabsTrigger
                     value="customers"
@@ -1176,6 +1168,14 @@ const AdminDashboard = () => {
                   </TabsTrigger>
 
                   <TabsTrigger
+                    value="scheduling"
+                    className="w-full justify-start gap-3 px-4 py-3 rounded-lg hover:bg-accent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                  >
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm font-medium">Agendamento</span>
+                  </TabsTrigger>
+
+                  <TabsTrigger
                     value="payments"
                     className="w-full justify-start gap-3 px-4 py-3 rounded-lg hover:bg-accent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
                   >
@@ -1184,6 +1184,14 @@ const AdminDashboard = () => {
                   </TabsTrigger>
 
                   <Separator className="my-1" />
+
+                  <TabsTrigger
+                    value="settings"
+                    className="w-full justify-start gap-3 px-4 py-3 rounded-lg hover:bg-accent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span className="text-sm font-medium">Configurações</span>
+                  </TabsTrigger>
 
                   <TabsTrigger
                     value="notifications"
@@ -1199,14 +1207,6 @@ const AdminDashboard = () => {
                   >
                     <BarChart3 className="w-4 h-4" />
                     <span className="text-sm font-medium">Relatórios</span>
-                  </TabsTrigger>
-
-                  <TabsTrigger
-                    value="scheduling"
-                    className="w-full justify-start gap-3 px-4 py-3 rounded-lg hover:bg-accent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
-                  >
-                    <Clock className="w-4 h-4" />
-                    <span className="text-sm font-medium">Agendamento</span>
                   </TabsTrigger>
 
                   <TabsTrigger
