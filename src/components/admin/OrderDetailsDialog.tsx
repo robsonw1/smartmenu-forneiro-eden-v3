@@ -59,6 +59,46 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
   const [localOrder, setLocalOrder] = useState<Order | null>(order);
 
+  // 🔄 Carregar pedido FRESCO do banco quando o dialog abre (para garantir campos como change_amount)
+  useEffect(() => {
+    if (!open || !order?.id) return;
+
+    const loadFreshOrder = async () => {
+      const { data: freshOrder, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', order.id)
+        .single() as { data: Order | null; error: any };
+
+      if (error) {
+        console.error('Erro ao carregar pedido fresco:', error);
+        return;
+      }
+
+      if (freshOrder && freshOrder.address) {
+        // Reconstruir o order com os dados frescos do banco
+        setLocalOrder((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            address: {
+              ...prev.address,
+              city: freshOrder.address.city || prev.address.city,
+              neighborhood: freshOrder.address.neighborhood || prev.address.neighborhood,
+              street: freshOrder.address.street || prev.address.street,
+              number: freshOrder.address.number || prev.address.number,
+              complement: freshOrder.address.complement || prev.address.complement,
+              reference: freshOrder.address.reference || prev.address.reference,
+              change_amount: freshOrder.address.change_amount, // ✅ CRÍTICO: Incluir troco!
+            },
+          };
+        });
+      }
+    };
+
+    loadFreshOrder();
+  }, [open, order?.id]);
+
   // 🔴 REALTIME: Monitorar mudanças no status da ordem para refrescar UI
   useEffect(() => {
     if (!open || !order?.id) return;
@@ -92,6 +132,10 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
               status: updatedOrder.status,
               pointsRedeemed: updatedOrder.points_redeemed || 0,
               pendingPoints: updatedOrder.pending_points || 0,
+              address: updatedOrder.address ? {
+                ...prev.address,
+                ...updatedOrder.address,
+              } : prev.address,
             };
           });
 
