@@ -64,35 +64,48 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
     if (!open || !order?.id) return;
 
     const loadFreshOrder = async () => {
-      const { data: freshOrder, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', order.id)
-        .single() as { data: Order | null; error: any };
+      try {
+        const response = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', order.id)
+          .single() as any;
 
-      if (error) {
-        console.error('Erro ao carregar pedido fresco:', error);
-        return;
-      }
+        const { data: freshOrderRaw, error } = response;
 
-      if (freshOrder && freshOrder.address) {
-        // Reconstruir o order com os dados frescos do banco
+        if (error) {
+          console.error('[ADMIN] Erro ao carregar pedido fresco:', error);
+          return;
+        }
+
+        if (!freshOrderRaw) {
+          console.warn('[ADMIN] Pedido não encontrado no banco:', order.id);
+          return;
+        }
+
+        // Reconstruir o address exatamente como o syncOrdersFromSupabase faz
+        const addressFromBank = freshOrderRaw.address || {};
+        
+        const reconstructedAddress = {
+          city: addressFromBank.city || order.address?.city || '',
+          neighborhood: addressFromBank.neighborhood || order.address?.neighborhood || '',
+          street: addressFromBank.street || order.address?.street || '',
+          number: addressFromBank.number || order.address?.number || '',
+          complement: addressFromBank.complement || order.address?.complement || '',
+          reference: addressFromBank.reference || order.address?.reference || '',
+          change_amount: addressFromBank.change_amount || undefined,
+        };
+
+        // Atualizar localOrder com dados frescos
         setLocalOrder((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
-            address: {
-              ...prev.address,
-              city: freshOrder.address.city || prev.address.city,
-              neighborhood: freshOrder.address.neighborhood || prev.address.neighborhood,
-              street: freshOrder.address.street || prev.address.street,
-              number: freshOrder.address.number || prev.address.number,
-              complement: freshOrder.address.complement || prev.address.complement,
-              reference: freshOrder.address.reference || prev.address.reference,
-              change_amount: freshOrder.address.change_amount, // ✅ CRÍTICO: Incluir troco!
-            },
+            address: reconstructedAddress,
           };
         });
+      } catch (err) {
+        console.error('[ADMIN] Erro ao carregar pedido fresco:', err);
       }
     };
 
@@ -121,21 +134,27 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
             status: updatedOrder.status,
             pointsRedeemed: updatedOrder.points_redeemed,
             pendingPoints: updatedOrder.pending_points,
+            addressChangeAmount: updatedOrder.address?.change_amount,
             timestamp: new Date().toISOString()
           });
 
           // ✨ ATUALIZAR O ESTADO LOCAL DO ORDER
           setLocalOrder((prev) => {
             if (!prev) return prev;
+            
+            // 🔨 Reconstruir address com segurança (não perder change_amount)
+            const newAddress = updatedOrder.address ? {
+              ...prev.address, // Manter campos existentes
+              ...updatedOrder.address, // Sobrescrever apenas o que veio do realtime
+              change_amount: updatedOrder.address.change_amount ?? prev.address?.change_amount, // Garantir change_amount
+            } : prev.address;
+            
             return {
               ...prev,
               status: updatedOrder.status,
               pointsRedeemed: updatedOrder.points_redeemed || 0,
               pendingPoints: updatedOrder.pending_points || 0,
-              address: updatedOrder.address ? {
-                ...prev.address,
-                ...updatedOrder.address,
-              } : prev.address,
+              address: newAddress,
             };
           });
 
@@ -542,10 +561,19 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
                 {localOrder.paymentMethod === 'pix' ? 'PIX' : localOrder.paymentMethod === 'card' ? 'Cartao' : 'Dinheiro'}
               </Badge>
             </div>
-            {localOrder.address?.change_amount && (
+            {/* 🔍 DEBUG: Mostrar change_amount se existir */}
+            {localOrder.address?.change_amount ? (
               <div>
                 <span className="text-muted-foreground">Troco para:</span>
-                <Badge variant="secondary">R$ {Number(localOrder.address.change_amount).toFixed(2)}</Badge>
+                <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">
+                  R$ {typeof localOrder.address.change_amount === 'number' 
+                    ? localOrder.address.change_amount.toFixed(2)
+                    : Number(localOrder.address.change_amount).toFixed(2)}
+                </Badge>
+              </div>
+            ) : (
+              <div className="text-muted-foreground text-xs">
+                {localOrder.paymentMethod === 'cash' ? 'Sem troco' : ''}
               </div>
             )}
             <div>
