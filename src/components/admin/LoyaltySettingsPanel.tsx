@@ -15,7 +15,7 @@ export function LoyaltySettingsPanel() {
 
   useEffect(() => {
     loadSettings();
-  }, [loadSettings]);
+  }, []);
 
   useEffect(() => {
     if (settings) {
