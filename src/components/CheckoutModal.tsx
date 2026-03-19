@@ -402,43 +402,6 @@ export function CheckoutModal() {
     };
   }, [isCheckoutOpen]);
 
-  // ✅ LOYALTY SETTINGS SYNC: Carregar e monitorar mudanças nas configurações de lealdade
-  useEffect(() => {
-    const { loadSettings } = useLoyaltySettingsStore.getState();
-    
-    // Carregar settings na montagem
-    const initSettings = async () => {
-      console.log('✅ [CHECKOUT] Carregando loyalty settings...');
-      await loadSettings();
-    };
-    
-    initSettings();
-
-    // Escutar atualizações de loyalty settings
-    const handleSettingsUpdate = () => {
-      console.log('✅ [CHECKOUT] Loyalty settings atualizadas, rerenderizando...');
-      // Recarregar settings novamente para garantir valores atualizados
-      loadSettings();
-      // Forçar rerender
-      setSettingsLoaded(prev => !prev);
-    };
-
-    // Escutar atualizações de pontos do cliente (fallback para recompose)
-    const handlePointsUpdate = () => {
-      console.log('✅ [CHECKOUT] Pontos do cliente atualizados, rerenderizando checkout...');
-      setSettingsLoaded(prev => !prev);
-    };
-
-    window.addEventListener('loyaltySettingsUpdated', handleSettingsUpdate);
-    window.addEventListener('customerPointsUpdated', handlePointsUpdate);
-
-    // Limpar event listeners ao desmontar
-    return () => {
-      window.removeEventListener('loyaltySettingsUpdated', handleSettingsUpdate);
-      window.removeEventListener('customerPointsUpdated', handlePointsUpdate);
-    };
-  }, []);
-
   // 🔴 REALTIME: Sincronizar pontos do cliente em tempo real
   // Detecta quando outro navegador/aba usa os mesmos pontos (previne fraude)
   useEffect(() => {
