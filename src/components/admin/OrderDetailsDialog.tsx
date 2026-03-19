@@ -175,42 +175,22 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
               duration: 5000
             });
             
-            // ✅ NOVO: Sincronizar pontos do cliente COM RETRY após cancelamento
+            // ✅ NOVO: Sincronizar pontos do cliente IMEDIATAMENTE após cancelamento
             if (localOrder.customer?.email) {
               const findOrCreateCustomer = useLoyaltyStore.getState().findOrCreateCustomer;
               const refreshCurrentCustomer = useLoyaltyStore.getState().refreshCurrentCustomer;
               
-              // Função helper com retry para sincronização (aguarda 500ms entre tentativas)
-              const syncPointsWithRetry = async (email: string, retries = 3, delay = 500) => {
-                for (let attempt = 1; attempt <= retries; attempt++) {
-                  try {
-                    // Esperar um pouco para permitir que o trigger do banco execute
-                    if (attempt > 1) {
-                      console.log(`[ORDER-CANCEL] ⏳ Tentativa ${attempt}/${retries}: Aguardando ${delay}ms...`);
-                      await new Promise(resolve => setTimeout(resolve, delay));
-                    }
-                    
-                    const customer = await findOrCreateCustomer(email);
-                    if (customer?.id) {
-                      await refreshCurrentCustomer(customer.id);
-                      console.log(`[ORDER-CANCEL] ✅ (Tentativa ${attempt}/${retries}) Pontos sincronizados com sucesso`);
-                      
-                      // Disparar evento para atualizar UI
-                      window.dispatchEvent(new CustomEvent('customerPointsUpdated', { 
-                        detail: { customerId: customer.id } 
-                      }));
-                      
-                      return true;
-                    }
-                  } catch (error) {
-                    console.error(`[ORDER-CANCEL] ⚠️ (Tentativa ${attempt}/${retries}) Erro ao sincronizar:`, error);
-                  }
+              findOrCreateCustomer(localOrder.customer.email).then((customer) => {
+                if (customer?.id) {
+                  refreshCurrentCustomer(customer.id).then(() => {
+                    console.log('[ORDER-CANCEL] ✅ Pontos do cliente sincronizados após cancelamento');
+                    // ✅ Disparar evento para atualizar UI customer
+                    window.dispatchEvent(new CustomEvent('customerPointsUpdated', { detail: { customerId: customer.id } }));
+                  }).catch((error) => {
+                    console.error('[ORDER-CANCEL] ⚠️ Erro ao sincronizar pontos:', error);
+                  });
                 }
-                return false;
-              };
-              
-              // Executar sincronização com retry em background
-              syncPointsWithRetry(localOrder.customer.email);
+              });
             }
             
             // Fechar o diálogo após 2 segundos
@@ -256,49 +236,25 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
   const handleStatusChange = (newStatus: OrderStatus) => {
     updateOrderStatus(localOrder.id, newStatus);
     
-    // 🔴 SE CANCELADO: Fazer refresh dos pontos do cliente com RETRY + DELAY
+    // 🔴 SE CANCELADO: Fazer refresh dos pontos do cliente após reversão automática
     if (newStatus === 'cancelled' && localOrder.customer?.email) {
-      console.log('[ADMIN] 🔄 Pedido cancelado! Sincronizando pontos do cliente com retry...', localOrder.customer.email);
+      console.log('[ADMIN] 🔄 Pedido cancelado! Sincronizando pontos do cliente...', localOrder.customer.email);
       
-      // Função helper com retry para sincronização
-      const syncPointsWithRetry = async (email: string, retries = 3, delay = 500) => {
-        const findOrCreateCustomer = useLoyaltyStore.getState().findOrCreateCustomer;
-        const refreshCurrentCustomer = useLoyaltyStore.getState().refreshCurrentCustomer;
-        
-        for (let attempt = 1; attempt <= retries; attempt++) {
-          try {
-            // Esperar um pouco para permitir que o trigger do banco execute
-            if (attempt > 1) {
-              console.log(`[ADMIN] ⏳ Tentativa ${attempt}/${retries}: Aguardando ${delay}ms...`);
-              await new Promise(resolve => setTimeout(resolve, delay));
-            }
-            
-            const customer = await findOrCreateCustomer(email);
-            if (customer?.id) {
-              await refreshCurrentCustomer(customer.id);
-              console.log(`[ADMIN] ✅ (Tentativa ${attempt}/${retries}) Pontos sincronizados com sucesso`);
-              
-              // Disparar evento para atualizar UI
-              window.dispatchEvent(new CustomEvent('customerPointsUpdated', { 
-                detail: { customerId: customer.id } 
-              }));
-              
-              return true;
-            }
-          } catch (error) {
-            console.error(`[ADMIN] ⚠️ (Tentativa ${attempt}/${retries}) Erro ao sincronizar:`, error);
-            if (attempt === retries) {
-              toast.error('⚠️ Não conseguimos sincronizar os pontos. Verifique manualmente.');
-              return false;
-            }
-          }
+      // Buscar ID do cliente e fazer refresh
+      const findOrCreateCustomer = useLoyaltyStore.getState().findOrCreateCustomer;
+      const refreshCurrentCustomer = useLoyaltyStore.getState().refreshCurrentCustomer;
+      
+      findOrCreateCustomer(localOrder.customer.email).then((customer) => {
+        if (customer?.id) {
+          refreshCurrentCustomer(customer.id).then(() => {
+            console.log('[ADMIN] ✅ Pontos sincronizados após cancelamento');
+          }).catch((error) => {
+            console.error('[ADMIN] ⚠️ Erro ao sincronizar pontos:', error);
+          });
         }
-      };
+      });
       
-      // Executar sincronização com retry (aguarda 500ms entre tentativas)
-      syncPointsWithRetry(localOrder.customer.email);
-      
-      toast.success(`Pedido cancelado! Pontos sendo sincronizados (3 tentativas).`);
+      toast.success(`Pedido cancelado! Pontos foram revertidos automaticamente.`);
     } else {
       toast.success(`Status alterado para "${statusLabels[newStatus]}"`);
     }
