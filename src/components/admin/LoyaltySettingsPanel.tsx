@@ -106,7 +106,7 @@ export function LoyaltySettingsPanel() {
           </div>
           <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
             <p className="text-sm text-blue-900">
-              💡 <strong>Proporção atual:</strong> {form.pointsPerReal} pontos/real × {form.discountPer100Points}R$/100pts = {((form.pointsPerReal || 1) * (form.discountPer100Points || 5) / 100).toFixed(2)}% de desconto acumulado
+              💡 <strong>Desconto final:</strong> <strong className="text-lg text-blue-700">{((form.pointsPerReal || 1) * (form.discountPer100Points || 5)).toFixed(0)}%</strong> de retorno por real gasto
             </p>
           </div>
         </div>
