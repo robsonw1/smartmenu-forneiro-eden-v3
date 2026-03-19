@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Order } from '@/data/products';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,6 +110,11 @@ export const useOrdersStore = create<OrdersStore>()(
             ...newOrder.address,
             paymentMethod: newOrder.paymentMethod, // Store internally for later retrieval
           };
+          
+          // Adicionar change_amount se cliente escolheu troco em dinheiro
+          if (newOrder.paymentMethod === 'cash' && newOrder.needsChange && newOrder.changeAmount) {
+            addressWithMetadata.change_amount = newOrder.changeAmount;
+          }
           
           // ­ƒöæ CR├ìTICO: Calcular pending_points baseado em se cliente usou pontos
           // Se cliente resgatou pontos: N├âO ganhou novos pontos nesta compra
