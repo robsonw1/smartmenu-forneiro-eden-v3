@@ -942,14 +942,6 @@ export function CheckoutModal() {
       })),
     });
 
-    // 💰 DEBUG: Log de troco ANTES de criar pedido
-    console.log('💰 [CHECKOUT] Debug de Troco:', {
-      paymentMethod,
-      needsChange,
-      changeAmount,
-      deviaPassar: paymentMethod === 'cash' && needsChange ? changeAmount : 'NÃO deveria passar (cash ou needsChange false)',
-    });
-
     const createdOrder = await addOrder({
       customer: {
         name: customer.name,
