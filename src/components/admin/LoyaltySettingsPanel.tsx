@@ -48,9 +48,6 @@ export function LoyaltySettingsPanel() {
         
         // ✅ NOVO: Recarregar settings IMEDIATAMENTE após salvar
         await loadSettings();
-        
-        // ✅ NOVO: Notificar todos os componentes sobre a mudança
-        window.dispatchEvent(new CustomEvent('loyaltySettingsUpdated', { detail: form }));
       } else {
         toast.error('Erro ao salvar configurações');
       }
