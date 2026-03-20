@@ -36,28 +36,7 @@ export function CustomerProfileDropdown() {
     loadSettings();
   }, [loadSettings]);
 
-  // ✅ NOVO: Listener para atualizar quando settings mudam no admin
-  useEffect(() => {
-    const handleSettingsUpdate = () => {
-      console.log('[CUSTOMER-DROPDOWN] 🔄 Configurações de fidelidade atualizadas');
-      loadSettings();
-    };
 
-    const handlePointsUpdate = (event: Event) => {
-      if (currentCustomer?.id) {
-        console.log('[CUSTOMER-DROPDOWN] 🔄 Pontos do cliente atualizados');
-        refreshCurrentCustomer(currentCustomer.id);
-      }
-    };
-
-    window.addEventListener('loyaltySettingsUpdated', handleSettingsUpdate);
-    window.addEventListener('customerPointsUpdated', handlePointsUpdate);
-
-    return () => {
-      window.removeEventListener('loyaltySettingsUpdated', handleSettingsUpdate);
-      window.removeEventListener('customerPointsUpdated', handlePointsUpdate);
-    };
-  }, [currentCustomer?.id, loadSettings, refreshCurrentCustomer]);
 
   // Hook para gerenciar PWA install
   const { canInstall, isInstalled, isInstalling, triggerInstall } = usePWAInstall();
