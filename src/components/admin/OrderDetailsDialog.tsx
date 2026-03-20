@@ -184,8 +184,7 @@ export function OrderDetailsDialog({ open, onOpenChange, order }: OrderDetailsDi
                 if (customer?.id) {
                   refreshCurrentCustomer(customer.id).then(() => {
                     console.log('[ORDER-CANCEL] ✅ Pontos do cliente sincronizados após cancelamento');
-                    // ✅ Disparar evento para atualizar UI customer
-                    window.dispatchEvent(new CustomEvent('customerPointsUpdated', { detail: { customerId: customer.id } }));
+
                   }).catch((error) => {
                     console.error('[ORDER-CANCEL] ⚠️ Erro ao sincronizar pontos:', error);
                   });
