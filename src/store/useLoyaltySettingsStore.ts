@@ -55,9 +55,6 @@ export const useLoyaltySettingsStore = create<LoyaltySettingsStore>((set, get) =
 
         set({ settings });
         console.log('✅ Configurações de fidelização carregadas:', settings);
-        
-        // ✅ NOVO: Notify customers about settings change via realtime
-        window.dispatchEvent(new CustomEvent('loyaltySettingsUpdated', { detail: settings }));
       }
     } catch (error) {
       console.error('Erro em loadSettings:', error);
