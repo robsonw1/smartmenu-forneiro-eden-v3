@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,11 +12,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLoyaltyStore } from '@/store/useLoyaltyStore';
-import { useLoyaltySettingsStore } from '@/store/useLoyaltySettingsStore';
 import { toast } from 'sonner';
 import { Gift, Star, Sparkles, TrendingUp, User, LogIn } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useLoyaltySettingsSync } from '@/hooks/useLoyaltySettingsSync';
 
 interface PostCheckoutLoyaltyModalProps {
   isOpen: boolean;
@@ -57,15 +57,22 @@ export function PostCheckoutLoyaltyModal({
   const currentCustomer = useLoyaltyStore((s) => s.currentCustomer);
   const isRemembered = useLoyaltyStore((s) => s.isRemembered);
 
-  // Valores dinâmicos do painel de fidelização
-  const loyaltySettings = useLoyaltySettingsStore((s) => s.settings);
-  const signupBonusPoints = loyaltySettings?.signupBonusPoints ?? 50;
-  const pointsPerReal = loyaltySettings?.pointsPerReal ?? 1;
-  const discountPer100Points = loyaltySettings?.discountPer100Points ?? 5;
+  // 🔄 Sincronizar configurações de fidelização em tempo real
+  const loyaltySettings = useLoyaltySettingsSync();
   
-  // Cálculos dinâmicos
-  const bonusInReais = (signupBonusPoints / 100) * discountPer100Points;
-  const pointsPercentage = pointsPerReal.toFixed(0);
+  // Cálculos dinâmicos com useMemo para garantir reatividade
+  const { signupBonusPoints, pointsPercentage, bonusInReais, discountPer100Points } = useMemo(() => {
+    const bonus = loyaltySettings?.signupBonusPoints ?? 50;
+    const pointsPerReal = loyaltySettings?.pointsPerReal ?? 1;
+    const discount = loyaltySettings?.discountPer100Points ?? 5;
+    
+    return {
+      signupBonusPoints: bonus,
+      pointsPercentage: pointsPerReal.toFixed(0),
+      bonusInReais: (bonus / 100) * discount,
+      discountPer100Points: discount,
+    };
+  }, [loyaltySettings]);
 
   const handleClose = () => {
     setStep('benefits');
@@ -87,6 +94,11 @@ export function PostCheckoutLoyaltyModal({
     }
     return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7, 11)}`;
   };
+
+  // Debug: Log mudanças nas settings
+  if (isOpen && loyaltySettings) {
+    console.log(`🎁 [CHECKOUT] Settings de fidelização: ${signupBonusPoints} pontos bônus, ${pointsPercentage}% cashback`);
+  }
 
   const handleSignup = async () => {
     if (!signupData.name.trim()) {
