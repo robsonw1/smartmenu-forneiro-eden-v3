@@ -48,7 +48,7 @@ export function PostCheckoutLoyaltyModal({
     cpf: '',
   });
 
-  const [keepConnected, setKeepConnected] = useState(false);
+  const [keepConnected, setKeepConnected] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -209,16 +209,18 @@ export function PostCheckoutLoyaltyModal({
 
     setIsLoading(true);
     try {
+      // ✅ SEMPRE salvar login (rememberMe = true por padrão)
       const success = await loginCustomer(
         loginData.email,
         loginData.cpf.replace(/\D/g, ''),
-        keepConnected
+        true  // ← SEMPRE true agora, para manter conectado por padrão
       );
 
       if (success) {
         setSuccessMessage('Bem-vindo de volta! Seus pontos foram atualizados ✨');
         setStep('success');
         toast.success('✅ Login realizado com sucesso!');
+        setIsSuccess(true);  // ← Também ativa o delay de 1s antes de fechar
       } else {
         toast.error('Email ou CPF inválido. Tente criar uma conta na aba "Criar Conta".');
         setActiveTab('signup');
