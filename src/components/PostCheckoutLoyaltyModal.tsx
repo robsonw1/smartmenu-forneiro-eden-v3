@@ -142,31 +142,48 @@ export function PostCheckoutLoyaltyModal({
       );
 
       if (success) {
-        // ✅ NOVO: Fazer login automático com "me manter conectado"
-        // Isso salva as credenciais no localStorage e mantém o cliente logado após refresh
-        console.log('✅ [LOYALTY] Conta criada com sucesso, fazendo login automático...');
+        // ✅ NOVO: Fazer login automático com retry logic
+        // Supabase pode levar 200-500ms para replicar, então fazemos retries
+        console.log('✅ [LOYALTY] Conta criada com sucesso, tentando fazer login automático...');
         
-        const loginSuccess = await loginCustomer(
-          signupData.email,
-          signupData.cpf.replace(/\D/g, ''),
-          true  // rememberMe = true ← Salva em localStorage e mantém permanentemente logado
-        );
+        let loginSuccess = false;
+        const maxRetries = 3;
+        const retryDelayMs = 300;
+        
+        // Tentar fazer login com retry (Supabase pode levar tempo para replicar)
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          if (attempt > 1) {
+            console.log(`🔄 [LOYALTY] Tentativa ${attempt}/${maxRetries} de auto-login...`);
+            await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+          }
+          
+          loginSuccess = await loginCustomer(
+            signupData.email,
+            signupData.cpf.replace(/\D/g, ''),
+            true  // rememberMe = true ← Salva em localStorage
+          );
+          
+          if (loginSuccess) {
+            console.log(`✅ [LOYALTY] Auto-login bem-sucedido na tentativa ${attempt}`);
+            break;
+          }
+        }
 
         if (loginSuccess) {
           console.log('✅ [LOYALTY] Cliente autenticado e será lembrado no próximo acesso');
           setSuccessMessage(`Bem-vindo! ${signupBonusPoints} pontos bônus adicionados 🎉`);
           setStep('success');
           toast.success('✅ Conta criada e você está logado!');
-          // ✅ TRIGGER: Setar isSuccess true para disparar useEffect que fecha modal com delay
           setIsSuccess(true);
         } else {
-          // Login falhou mas conta foi criada, então mostra sucesso mesmo assim
-          console.warn('⚠️  [LOYALTY] Conta criada mas login automático falhou');
+          // Login falhou após retries - conta foi criada, usuário pode entrar manualmente depois
+          console.warn('⚠️  [LOYALTY] Conta criada mas auto-login falhou após retries');
           setSuccessMessage(`Bem-vindo! ${signupBonusPoints} pontos bônus adicionados 🎉`);
           setStep('success');
-          toast.success('✅ Conta criada com sucesso! Faça login na próxima vez.');
-          // ✅ MESMO SEM LOGIN AUTOMÁTICO: Fechar após 2s (mais tempo para ler mensagem)
-          setIsSuccess(true);
+          toast.success('✅ Conta criada! Faça login manualmente na próxima vez.');
+          setTimeout(() => {
+            setIsSuccess(true);
+          }, 2000);
         }
       } else {
         toast.error('Email já existe. Tente entrar na aba "Entrar".');
