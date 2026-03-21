@@ -99,7 +99,15 @@ export function CustomerLoginModal({
 
     setIsLoading(true);
     try {
-      const success = await loginCustomer(loginEmail, loginCpf.replace(/\D/g, ''), rememberMe);
+      // ✅ SEMPRE salvar login (rememberMe = true por padrão)
+      console.log('🔐 [CUSTOMER-LOGIN] Iniciando login com rememberMe=true');
+      const success = await loginCustomer(
+        loginEmail, 
+        loginCpf.replace(/\D/g, ''), 
+        true  // ← SEMPRE true, para manter conectado por padrão
+      );
+
+      console.log('🔐 [CUSTOMER-LOGIN] Login result:', success);
 
       if (success) {
         toast.success('✅ Bem-vindo! Dados carregados com sucesso');
@@ -109,10 +117,11 @@ export function CustomerLoginModal({
         onClose();
         onSuccess?.();
       } else {
+        console.warn('⚠️  [CUSTOMER-LOGIN] Login falhou');
         toast.error('❌ Email ou CPF inválidos. Dados não encontrados.');
       }
     } catch (error) {
-      console.error('Erro de login:', error);
+      console.error('❌ [CUSTOMER-LOGIN] Erro:', error);
       toast.error('Erro ao fazer login');
     } finally {
       setIsLoading(false);
