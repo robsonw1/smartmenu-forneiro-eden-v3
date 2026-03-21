@@ -632,13 +632,17 @@ export const useLoyaltyStore = create<LoyaltyStore>((set, get) => ({
 
       // Se rememberMe está ativado, salvar credenciais no localStorage
       if (rememberMe) {
-        localStorage.setItem('loyalty_remembered_login', JSON.stringify({
+        const payload = {
           email: normalizedEmail,
           cpf,
           timestamp: Date.now(),
-        }));
+        };
+        localStorage.setItem('loyalty_remembered_login', JSON.stringify(payload));
+        console.log('💾 [STORAGE] localStorage.setItem executado com:', payload);
+        console.log('💾 [STORAGE] Verificando localStorage agora:', localStorage.getItem('loyalty_remembered_login'));
       } else {
         localStorage.removeItem('loyalty_remembered_login');
+        console.log('🗑️  [STORAGE] localStorage.removeItem executado');
       }
 
       set({
@@ -660,21 +664,26 @@ export const useLoyaltyStore = create<LoyaltyStore>((set, get) => ({
   restoreRememberedLogin: async () => {
     try {
       const remembered = localStorage.getItem('loyalty_remembered_login');
+      console.log('📝 [RESTORE] localStorage.getItem resultado:', remembered);
+      
       if (!remembered) {
-        console.log('ℹ️ Nenhum login lembrado encontrado');
+        console.log('ℹ️ [RESTORE] Nenhum login lembrado encontrado no localStorage');
         return false;
       }
 
       const { email, cpf } = JSON.parse(remembered);
-      console.log('🔄 Restaurando login lembrado:', email);
+      console.log('🔄 [RESTORE] Restaurando login lembrado para:', email);
 
       const success = await get().loginCustomer(email, cpf, true);
+      console.log('🔄 [RESTORE] loginCustomer retornou:', success);
+      
       if (success) {
         set({ isRemembered: true });
+        console.log('✅ [RESTORE] Cliente restaurado e isRemembered = true');
       }
       return success;
     } catch (error) {
-      console.error('Erro ao restaurar login lembrado:', error);
+      console.error('❌ [RESTORE] Erro ao restaurar login:', error);
       localStorage.removeItem('loyalty_remembered_login');
       return false;
     }
