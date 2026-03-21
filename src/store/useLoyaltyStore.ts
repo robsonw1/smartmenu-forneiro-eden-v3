@@ -149,21 +149,11 @@ export const useLoyaltyStore = create<LoyaltyStore>((set, get) => ({
         return customer;
       }
 
-      // Criar novo cliente não registrado (email já será normalizado pelo trigger)
-      const { data: newCustomer, error: createError } = await (supabase as any)
-        .from('customers')
-        .insert([{ email: normalizedEmail, is_registered: false, created_at: new Date() }])
-        .select()
-        .single();
-
-      if (createError) {
-        console.error('Erro ao criar cliente:', createError);
-        return null;
-      }
-
-      const customer = mapCustomerFromDB(newCustomer);
-      set({ currentCustomer: customer, points: 0 });
-      return customer;
+      // ❌ NÃO criar cliente automaticamente aqui
+      // Cliente será criado MANUALMENTE quando cliente preencher CPF no popupde signup
+      // Retornar null se cliente não encontrado (apenas procura, não cria)
+      console.log('ℹ️ [LOYALTY] Cliente anônimo - nenhuma conta encontrada com email:', normalizedEmail);
+      return null;
     } catch (error) {
       console.error('Erro em findOrCreateCustomer:', error);
       return null;
