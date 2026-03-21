@@ -81,7 +81,7 @@ export function PostCheckoutLoyaltyModal({
     setActiveTab('signup');
     setSignupData({ name: '', email: '', cpf: '', phone: '' });
     setLoginData({ email: '', cpf: '' });
-    setKeepConnected(false);
+    setKeepConnected(true);  // ← Resetar para TRUE (não false) para próxima abertura
     setSuccessMessage('');
     setIsSuccess(false);
     onClose();
@@ -210,23 +210,28 @@ export function PostCheckoutLoyaltyModal({
     setIsLoading(true);
     try {
       // ✅ SEMPRE salvar login (rememberMe = true por padrão)
+      console.log('🔐 [CHECKOUT-LOGIN] Iniciando login com rememberMe=true');
       const success = await loginCustomer(
         loginData.email,
         loginData.cpf.replace(/\D/g, ''),
         true  // ← SEMPRE true agora, para manter conectado por padrão
       );
 
+      console.log('🔐 [CHECKOUT-LOGIN] Resultado do login:', success);
+      
       if (success) {
+        console.log('🔐 [CHECKOUT-LOGIN] Login bem-sucedido! Ativando delay de 1s...');
         setSuccessMessage('Bem-vindo de volta! Seus pontos foram atualizados ✨');
         setStep('success');
         toast.success('✅ Login realizado com sucesso!');
         setIsSuccess(true);  // ← Também ativa o delay de 1s antes de fechar
       } else {
+        console.warn('⚠️  [CHECKOUT-LOGIN] Login falhou!');
         toast.error('Email ou CPF inválido. Tente criar uma conta na aba "Criar Conta".');
         setActiveTab('signup');
       }
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('❌ [CHECKOUT-LOGIN] Erro:', error);
       toast.error('Erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);
