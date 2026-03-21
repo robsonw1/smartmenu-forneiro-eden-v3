@@ -56,6 +56,7 @@ export function PostCheckoutLoyaltyModal({
   const loginCustomer = useLoyaltyStore((s) => s.loginCustomer);
   const currentCustomer = useLoyaltyStore((s) => s.currentCustomer);
   const isRemembered = useLoyaltyStore((s) => s.isRemembered);
+  const setCurrentCustomer = useLoyaltyStore((s) => s.setCurrentCustomer);
 
   // 🔄 Sincronizar configurações de fidelização em tempo real
   const loyaltySettings = useLoyaltySettingsSync();
@@ -128,9 +129,28 @@ export function PostCheckoutLoyaltyModal({
       );
 
       if (success) {
-        setSuccessMessage(`Bem-vindo! ${signupBonusPoints} pontos bônus adicionados 🎉`);
-        setStep('success');
-        toast.success('✅ Conta criada com sucesso!');
+        // ✅ NOVO: Fazer login automático com "me manter conectado"
+        // Isso salva as credenciais no localStorage e mantém o cliente logado após refresh
+        console.log('✅ [LOYALTY] Conta criada com sucesso, fazendo login automático...');
+        
+        const loginSuccess = await loginCustomer(
+          signupData.email,
+          signupData.cpf.replace(/\D/g, ''),
+          true  // rememberMe = true ← Salva em localStorage e mantém permanentemente logado
+        );
+
+        if (loginSuccess) {
+          console.log('✅ [LOYALTY] Cliente autenticado e será lembrado no próximo acesso');
+          setSuccessMessage(`Bem-vindo! ${signupBonusPoints} pontos bônus adicionados 🎉`);
+          setStep('success');
+          toast.success('✅ Conta criada e você está logado!');
+        } else {
+          // Login falhou mas conta foi criada, então mostra sucesso mesmo assim
+          console.warn('⚠️  [LOYALTY] Conta criada mas login automático falhou');
+          setSuccessMessage(`Bem-vindo! ${signupBonusPoints} pontos bônus adicionados 🎉`);
+          setStep('success');
+          toast.success('✅ Conta criada com sucesso! Faça login na próxima vez.');
+        }
       } else {
         toast.error('Email já existe. Tente entrar na aba "Entrar".');
         setActiveTab('login');
