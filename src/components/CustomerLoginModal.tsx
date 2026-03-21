@@ -160,6 +160,33 @@ export function CustomerLoginModal({
       );
 
       if (success) {
+        // ✅ NOVO: Fazer login automático com retry logic
+        // Supabase pode levar 200-500ms para replicar, então fazemos retries
+        console.log('✅ [SIGNUP] Conta criada com sucesso, tentando fazer login automático...');
+        
+        let loginSuccess = false;
+        const maxRetries = 3;
+        const retryDelayMs = 300;
+        
+        // Tentar fazer login com retry (Supabase pode levar tempo para replicar)
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          if (attempt > 1) {
+            console.log(`🔄 [SIGNUP] Tentativa ${attempt}/${maxRetries} de auto-login...`);
+            await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+          }
+          
+          loginSuccess = await loginCustomer(
+            signupEmail,
+            signupCpf.replace(/\D/g, ''),
+            true  // rememberMe = true ← Salva em localStorage
+          );
+          
+          if (loginSuccess) {
+            console.log(`✅ [SIGNUP] Auto-login bem-sucedido na tentativa ${attempt}`);
+            break;
+          }
+        }
+
         setSignupEmail('');
         setSignupName('');
         setSignupCpf('');
@@ -168,16 +195,31 @@ export function CustomerLoginModal({
         onSignupSuccess?.();
         
         // ✨ Toast com ação: Sim (abrir dialog de endereço) ou Depois (apenas fechar)
-        toast.success('✅ Conta criada com sucesso!', {
-          description: 'Deseja preencher seu endereço de entrega padrão agora?',
-          action: {
-            label: 'Preencher Agora',
-            onClick: () => {
-              onOpenAddressDialog?.();
+        if (loginSuccess) {
+          console.log('✅ [SIGNUP] Cliente logado e será lembrado no próximo acesso');
+          toast.success('✅ Conta criada com sucesso e você está logado!', {
+            description: 'Deseja preencher seu endereço de entrega padrão agora?',
+            action: {
+              label: 'Preencher Agora',
+              onClick: () => {
+                onOpenAddressDialog?.();
+              },
             },
-          },
-          duration: 8000, // 8 segundos para o usuário decidir
-        });
+            duration: 8000,
+          });
+        } else {
+          console.warn('⚠️  [SIGNUP] Conta criada mas auto-login falhou após retries');
+          toast.success('✅ Conta criada com sucesso!', {
+            description: 'Deseja preencher seu endereço de entrega padrão agora?',
+            action: {
+              label: 'Preencher Agora',
+              onClick: () => {
+                onOpenAddressDialog?.();
+              },
+            },
+            duration: 8000,
+          });
+        }
       } else {
         toast.error('Erro ao criar conta. Verifique seus dados e tente novamente.');
       }
