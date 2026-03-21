@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -51,6 +51,7 @@ export function PostCheckoutLoyaltyModal({
   const [keepConnected, setKeepConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const registerCustomer = useLoyaltyStore((s) => s.registerCustomer);
   const loginCustomer = useLoyaltyStore((s) => s.loginCustomer);
@@ -82,6 +83,7 @@ export function PostCheckoutLoyaltyModal({
     setLoginData({ email: '', cpf: '' });
     setKeepConnected(false);
     setSuccessMessage('');
+    setIsSuccess(false);
     onClose();
   };
 
@@ -100,6 +102,17 @@ export function PostCheckoutLoyaltyModal({
   if (isOpen && loyaltySettings) {
     console.log(`🎁 [CHECKOUT] Settings de fidelização: ${signupBonusPoints} pontos bônus, ${pointsPercentage}% cashback`);
   }
+
+  // ✅ DELAY: Após sucesso, aguardar um pouco antes de fechar para garantir que localStorage foi salvo
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        console.log('⏱️  [LOYALTY] Delay de 1s completado, agora fechando modal');
+        handleClose();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess]);
 
   const handleSignup = async () => {
     if (!signupData.name.trim()) {
@@ -144,12 +157,16 @@ export function PostCheckoutLoyaltyModal({
           setSuccessMessage(`Bem-vindo! ${signupBonusPoints} pontos bônus adicionados 🎉`);
           setStep('success');
           toast.success('✅ Conta criada e você está logado!');
+          // ✅ TRIGGER: Setar isSuccess true para disparar useEffect que fecha modal com delay
+          setIsSuccess(true);
         } else {
           // Login falhou mas conta foi criada, então mostra sucesso mesmo assim
           console.warn('⚠️  [LOYALTY] Conta criada mas login automático falhou');
           setSuccessMessage(`Bem-vindo! ${signupBonusPoints} pontos bônus adicionados 🎉`);
           setStep('success');
           toast.success('✅ Conta criada com sucesso! Faça login na próxima vez.');
+          // ✅ MESMO SEM LOGIN AUTOMÁTICO: Fechar após 2s (mais tempo para ler mensagem)
+          setIsSuccess(true);
         }
       } else {
         toast.error('Email já existe. Tente entrar na aba "Entrar".');
