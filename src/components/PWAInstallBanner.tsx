@@ -55,7 +55,7 @@ export function PWAInstallBanner() {
                     📱 Instale nosso App
                   </p>
                   <p className="text-xs text-primary-foreground/85 leading-tight">
-                    Acesso rápido no seu menu
+                    Acesso rápido no seu celular
                   </p>
                 </div>
               </div>
