@@ -57,7 +57,7 @@ export function ProductCatalog() {
         {/* Section Header */}
         <div className="text-center mb-10">
           <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Nosso Cardápio
+            Forneiro Éden
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
             A Pizza mais recheada da cidade 🇮🇹.
