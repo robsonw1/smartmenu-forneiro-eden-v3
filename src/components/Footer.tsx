@@ -186,6 +186,17 @@ export function Footer({ onLoginClick, onAdminClick }: FooterProps) {
         {/* Copyright */}
         <div className="border-t pt-8 text-center text-sm text-muted-foreground">
           <p>© 2024 {settings.name}. Todos os direitos reservados.</p>
+          <p className="mt-3">
+            💚{' '}
+            <a
+              href="https://api.whatsapp.com/send?phone=5521972243112&text=Olá%21%20Gostaria%20de%20mais%20informações%20sobre%20o%20sistema%20*AEZap-smartmenu*%20para%20meu%20negócio"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors font-medium"
+            >
+              Desenvolvido por AEZap
+            </a>
+          </p>
         </div>
       </div>
     </footer>
