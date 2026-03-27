@@ -52,36 +52,44 @@ export const useCouponManagementStore = create<CouponManagementState>((set, get)
     try {
       set({ loading: true, error: null });
 
-      // 🔒 Chamar Edge Function (bypass RLS com autenticação)
-      const { data: responseData, error: responseError } = await (supabase as any)
-        .functions
-        .invoke('create-coupon', {
-          body: {
-            discount_percentage: percentageDiscount,
-            valid_days: validDays,
-            max_usage: maxUsage,
-            description,
-          },
-        });
+      const couponCode = `PROMO${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + validDays);
 
-      if (responseError || !responseData?.success) {
-        const errorMsg = `Erro ao criar cupom: ${responseData?.error || responseError?.message || 'Erro desconhecido'}`;
+      const { data, error } = await (supabase as any)
+        .from('loyalty_coupons')
+        .insert([
+          {
+            coupon_code: couponCode,
+            discount_percentage: percentageDiscount,
+            is_active: true,
+            is_used: false,
+            expires_at: expiresAt.toISOString(),
+            customer_id: null, // Cupom geral, não é para cliente específico
+            discount_amount: null,
+            points_threshold: null,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        const errorMsg = `Erro ao criar cupom: ${error.message}`;
         set({ error: errorMsg });
         console.error(errorMsg);
         return null;
       }
 
-      const couponData = responseData.coupon;
       const newCoupon: AdminCoupon = {
-        id: couponData.id,
-        couponCode: couponData.coupon_code,
-        discountPercentage: couponData.discount_percentage,
+        id: data.id,
+        couponCode: data.coupon_code,
+        discountPercentage: data.discount_percentage,
         description: description || '',
-        isActive: couponData.is_active,
-        isUsed: couponData.is_used,
+        isActive: data.is_active,
+        isUsed: data.is_used,
         validDays: validDays,
-        expiresAt: couponData.expires_at,
-        createdAt: couponData.created_at,
+        expiresAt: data.expires_at,
+        createdAt: data.created_at,
         usageCount: 0,
         maxUsage: maxUsage,
       };
@@ -89,7 +97,7 @@ export const useCouponManagementStore = create<CouponManagementState>((set, get)
       // Buscar cupons atualizados
       await get().getCoupons();
 
-      console.log('✅ Cupom criado via Edge Function:', couponData.coupon_code);
+      console.log('✅ Cupom criado:', couponCode);
       return newCoupon;
     } catch (error) {
       const errorMsg = `Erro em createCoupon: ${error}`;
