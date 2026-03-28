@@ -62,6 +62,7 @@ serve(async (req) => {
     const body = await req.json();
     const { 
       orderId,
+      tenantId,
       amount, 
       description, 
       payerEmail,
