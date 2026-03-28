@@ -30,6 +30,7 @@ import { useSettingsRealtimeSync } from '@/hooks/use-settings-realtime-sync';
 import { SchedulingSlotSelector } from './SchedulingSlotSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { sendOrderSummaryToWhatsApp } from '@/lib/whatsapp-notification';
+import { getTenantId } from '@/lib/tenant-config';
 import { PostCheckoutLoyaltyModal } from './PostCheckoutLoyaltyModal';
 import { 
   User, 
@@ -812,6 +813,7 @@ export function SchedulingCheckoutModal() {
   };
 
   const buildOrderPayload = (orderId: string) => {
+    const tenantId = getTenantId();
     const paymentMethodMap = {
       pix: 'pix',
       card: 'cartao_maquina',
@@ -876,6 +878,7 @@ export function SchedulingCheckoutModal() {
 
     return {
       orderId,
+      tenant_id: tenantId,
       timestamp: new Date().toISOString(),
       
       // Customer info
@@ -1326,10 +1329,13 @@ export function SchedulingCheckoutModal() {
         // 🔒 NOVO FLUXO: Não cria pedido aqui, apenas gera QR code
         // Pedido será criado APÓS validar pagamento
         
+        const tenantId = getTenantId();
+        
         // Create PIX payment with final total (including points discount)
         const { data: mpData, error: mpError } = await supabase.functions.invoke('mercadopago-payment', {
           body: {
             orderId,
+            tenantId,
             amount: finalTotal,
             description: `Pedido ${orderId} - Forneiro Éden`,
             payerEmail: 'cliente@forneiroeden.com',
