@@ -228,18 +228,17 @@ serve(async (req) => {
             // 📱 Enviar notificação WhatsApp se PIX foi aprovado
             if (shouldAutoConfirm) {
               try {
-                // Buscar dados do pedido para notificação
+                // Buscar dados do pedido para notificação e impressão
                 const { data: orderData } = await supabase
                   .from('orders')
-                  .select('id, customer_name, customer_phone, tenant_id')
+                  .select('id, customer_name, customer_phone, tenant_id, items')
                   .eq('id', orderId)
                   .single();
 
                 if (orderData?.customer_phone && orderData?.tenant_id) {
-                  // Chamar edge function de notificação (assíncrono)
+                  // 📲 Enviar notificação WhatsApp (assíncrono)
                   console.log(`📲 Enviando notificação de confirmação para ${orderData.customer_phone}`);
                   
-                  // Realizar a chamada assincronamente sem aguardar
                   fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-whatsapp-notification`, {
                     method: 'POST',
                     headers: {
@@ -256,9 +255,25 @@ serve(async (req) => {
                   }).catch((err) => {
                     console.warn(`⚠️ Falha ao enviar notificação WhatsApp via webhook:`, err);
                   });
+
+                  // 🖨️ Enviar para PrintNode se auto-print está ativo (assíncrono)
+                  console.log(`🖨️ Enviando pedido para impressão automática...`);
+                  fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/printorder`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                    },
+                    body: JSON.stringify({
+                      orderId: orderId,
+                      tenantId: orderData.tenant_id,
+                    }),
+                  }).catch((err) => {
+                    console.warn(`⚠️ Falha ao enviar pedido para PrintNode:`, err);
+                  });
                 }
               } catch (notificationError) {
-                console.warn(`⚠️ Erro ao processar notificação:`, notificationError);
+                console.warn(`⚠️ Erro ao processar notificação/impressão:`, notificationError);
               }
             }
           }
