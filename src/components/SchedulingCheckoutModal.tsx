@@ -318,8 +318,13 @@ export function SchedulingCheckoutModal() {
         setCustomer({ email: currentCustomer.email });
         console.log('📧 Email preenchido automaticamente:', currentCustomer.email);
       }
+      // 🔑 CRÍTICO: Pré-preencher CPF do cliente autenticado (restaurado de v8)
+      if (currentCustomer.cpf && !customer.cpf) {
+        setCustomer({ cpf: currentCustomer.cpf });
+        console.log('🔐 CPF preenchido automaticamente:', currentCustomer.cpf.replace(/\d(?=\d{2})/g, '*'));
+      }
     }
-  }, [isSchedulingCheckoutOpen, currentCustomer?.name, currentCustomer?.phone, currentCustomer?.email, isRemembered]);
+  }, [isSchedulingCheckoutOpen, currentCustomer?.name, currentCustomer?.phone, currentCustomer?.email, currentCustomer?.cpf, isRemembered]);
 
   // Pré-preencher endereço salvo quando checkout abre
   useEffect(() => {
