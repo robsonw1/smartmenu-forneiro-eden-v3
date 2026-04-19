@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useRealtimeSync } from "@/hooks/use-realtime-sync";
+import { useAdminRealtimeSync } from "@/hooks/use-admin-realtime-sync";
 import { useSettingsRealtimeSync } from "@/hooks/use-settings-realtime-sync";
 import { useSettingsInitialLoad } from "@/hooks/use-settings-initial-load";
 import { useScheduleSync } from "@/hooks/use-schedule-sync";
@@ -21,7 +22,14 @@ const queryClient = new QueryClient();
 
 // Componente wrapper para usar hooks
 const AppContent = () => {
+  // ✅ Sincronização global de dados (produtos, bairros, etc)
   useRealtimeSync();
+  
+  // ✅ NOVO: Sincronização específica para admins (pedidos em tempo real)
+  // Garante que TODOS os admins vejam pedidos novos/alterados
+  useAdminRealtimeSync();
+  
+  // Demais sincronizações
   useSettingsInitialLoad();
   useSettingsRealtimeSync();
   useScheduleSync();
