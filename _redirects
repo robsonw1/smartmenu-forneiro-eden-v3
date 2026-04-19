@@ -1,0 +1,5 @@
+/*  /index.html   200
+
+# ✅ CACHE BUSTING: Nunca cachear HTML, assets com hash são auto-invalidados
+# HTML deve ser verificado sempre (máx 1 hora)
+# Assets (JS/CSS com hash) podem ser cacheados por 1 ano pois o hash garante unicidade
