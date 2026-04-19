@@ -25,7 +25,7 @@ import { useLoyaltySettingsStore } from '@/store/useLoyaltySettingsStore';
 import { useCouponManagementStore } from '@/store/useCouponManagementStore';
 import { useOrderCancellationSync } from '@/hooks/use-order-cancellation-sync';
 import { useStoreStatusRealtime } from '@/hooks/use-store-status-realtime';
-import { useSettingsRealtimeSync } from '@/hooks/use-settings-realtime-sync';
+
 import { supabase } from '@/integrations/supabase/client';
 import { sendOrderSummaryToWhatsApp } from '@/lib/whatsapp-notification';
 import { PostCheckoutLoyaltyModal } from './PostCheckoutLoyaltyModal';
@@ -158,7 +158,7 @@ export function CheckoutModal() {
   useStoreStatusRealtime(isCheckoutOpen);
 
   // ⚡ REALTIME: Sincronizar configurações do admin em tempo real (schedule, horários, etc)
-  useSettingsRealtimeSync();
+  // ℹ️ useSettingsRealtimeSync() chamado globalmente em App.tsx
 
   // ⏰ REATIVO ROBUSTO: Recalcular storeOpen quando settings mudam + intervalo de 5s
   useEffect(() => {

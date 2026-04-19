@@ -82,7 +82,7 @@ import { format, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useTheme } from '@/hooks/use-theme';
 import { useOrderAlertSound } from '@/hooks/use-order-alert-sound';
-import { useSettingsRealtimeSync } from '@/hooks/use-settings-realtime-sync';
+
 import { useRealtimeSync } from '@/hooks/use-realtime-sync';
 import { useSettingsInitialLoad } from '@/hooks/use-settings-initial-load';
 import logoForneiro from '@/assets/logo-forneiro.jpg';
@@ -154,7 +154,7 @@ const AdminDashboard = () => {
   useSettingsInitialLoad();
 
   // Sincronização em tempo real de configurações entre abas/navegadores
-  useSettingsRealtimeSync();
+  // ℹ️ useSettingsRealtimeSync() chamado globalmente em App.tsx
 
   // Local state for settings form
   const [settingsForm, setSettingsForm] = useState(settings);

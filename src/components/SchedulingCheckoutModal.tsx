@@ -26,7 +26,7 @@ import { useCouponManagementStore } from '@/store/useCouponManagementStore';
 import { useOrderCancellationSync } from '@/hooks/use-order-cancellation-sync';
 import { useSchedulingCancellationSync } from '@/hooks/use-scheduling-availability';
 import { useStoreStatusRealtime } from '@/hooks/use-store-status-realtime';
-import { useSettingsRealtimeSync } from '@/hooks/use-settings-realtime-sync';
+
 import { SchedulingSlotSelector } from './SchedulingSlotSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { sendOrderSummaryToWhatsApp } from '@/lib/whatsapp-notification';
@@ -193,7 +193,7 @@ export function SchedulingCheckoutModal() {
   useStoreStatusRealtime(isSchedulingCheckoutOpen);
 
   // ⚡ REALTIME: Sincronizar configurações do admin em tempo real (schedule, horários, etc)
-  useSettingsRealtimeSync();
+  // ℹ️ useSettingsRealtimeSync() chamado globalmente em App.tsx
 
   // ⏰ REATIVO ROBUSTO: Recalcular storeOpen quando settings mudam + intervalo de 2s
   useEffect(() => {

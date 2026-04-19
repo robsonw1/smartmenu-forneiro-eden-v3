@@ -10,6 +10,7 @@ import { useSettingsRealtimeSync } from "@/hooks/use-settings-realtime-sync";
 import { useSettingsInitialLoad } from "@/hooks/use-settings-initial-load";
 import { useScheduleSync } from "@/hooks/use-schedule-sync";
 import { useSettingsUpdateListener } from "@/hooks/use-settings-update-listener";
+import { useLoyaltySettingsSync } from "@/hooks/useLoyaltySettingsSync";
 import { useLoyaltySettingsStore } from "@/store/useLoyaltySettingsStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
@@ -32,6 +33,7 @@ const AppContent = () => {
   // Demais sincronizações
   useSettingsInitialLoad();
   useSettingsRealtimeSync();
+  useLoyaltySettingsSync(); // ✅ Sincronizar settings de fidelização globalmente
   useScheduleSync();
   useSettingsUpdateListener(); // ✅ Monitorar atualizações do admin
   const { loadSettings } = useLoyaltySettingsStore();

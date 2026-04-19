@@ -12,11 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLoyaltyStore } from '@/store/useLoyaltyStore';
+import { useLoyaltySettingsStore } from '@/store/useLoyaltySettingsStore';
 import { toast } from 'sonner';
 import { Gift, Star, Sparkles, TrendingUp, User, LogIn } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useLoyaltySettingsSync } from '@/hooks/useLoyaltySettingsSync';
+
 
 interface PostCheckoutLoyaltyModalProps {
   isOpen: boolean;
@@ -60,7 +61,8 @@ export function PostCheckoutLoyaltyModal({
   const setCurrentCustomer = useLoyaltyStore((s) => s.setCurrentCustomer);
 
   // 🔄 Sincronizar configurações de fidelização em tempo real
-  const loyaltySettings = useLoyaltySettingsSync();
+  // ℹ️ useLoyaltySettingsSync() chamado globalmente em App.tsx
+  const loyaltySettings = useLoyaltySettingsStore((s) => s.settings);
   
   // Cálculos dinâmicos com useMemo para garantir reatividade
   const { signupBonusPoints, pointsPercentage, bonusInReais, discountPer100Points } = useMemo(() => {
