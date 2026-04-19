@@ -9,7 +9,6 @@ import { CustomerLoginModal } from '@/components/CustomerLoginModal';
 import { DeliveryAddressDialog } from '@/components/DeliveryAddressDialog';
 import { useLoyaltyStore } from '@/store/useLoyaltyStore';
 import { useLoyaltyRealtimeSync } from '@/hooks/use-loyalty-realtime-sync';
-import { useRealtimeSync } from '@/hooks/use-realtime-sync';
 import { useState, useEffect } from 'react';
 
 const Index = () => {
@@ -18,9 +17,8 @@ const Index = () => {
   const currentCustomer = useLoyaltyStore((s) => s.currentCustomer);
   const restoreRememberedLogin = useLoyaltyStore((s) => s.restoreRememberedLogin);
 
-  // ✅ Sincronizar dados em tempo real (produtos, pedidos)
+  // ✅ Sincronizar dados de lealdade
   // ℹ️ useRealtimeSync(), useSettingsRealtimeSync() chamados globalmente em App.tsx
-  useRealtimeSync();
   useLoyaltyRealtimeSync();
 
   // Restaurar login lembrado ao inicializar
